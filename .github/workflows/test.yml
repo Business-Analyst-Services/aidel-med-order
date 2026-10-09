@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  deployments: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,9 +40,22 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GIT_SHA: ${{ github.sha }}
           BRANCH: ${{ github.head_ref || github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          SLUG=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
-          export PREVIEW_URL="https://aidel-med-order-git-${SLUG}-business-analyst-services.vercel.app"
+          # Vercel shortens/hashes branch URLs, so read the real preview URL from the
+          # GitHub deployment Vercel creates for this commit (wait up to ~3 minutes).
+          PREVIEW_URL=""
+          for i in $(seq 1 18); do
+            DEP=$(gh api "repos/${{ github.repository }}/deployments?sha=$HEAD_SHA" --jq '.[0].id' 2>/dev/null || true)
+            if [ -n "$DEP" ]; then
+              PREVIEW_URL=$(gh api "repos/${{ github.repository }}/deployments/$DEP/statuses" --jq '[.[] | select(.state=="success")][0].environment_url // empty' 2>/dev/null || true)
+            fi
+            [ -n "$PREVIEW_URL" ] && break
+            sleep 10
+          done
+          echo "Preview: ${PREVIEW_URL:-not found}"
+          export PREVIEW_URL
           node scripts/report-to-jira.js
       - name: Fail the job if tests failed
         if: steps.tests.outcome == 'failure'
