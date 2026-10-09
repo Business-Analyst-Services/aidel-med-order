@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medication Order – AIDEL Demo</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="bar">
+  <strong>Demo EMR</strong> · Medication Order
+  <span class="tag">DEMO – fictional patients and dose values</span>
+</header>
+<main>
+  <section class="card" aria-labelledby="pt">
+    <h2 id="pt">Patient</h2>
+    <label>Patient
+      <select id="patient" data-testid="patient"></select>
+    </label>
+    <p id="weight" data-testid="weight" class="muted"></p>
+  </section>
+
+  <section class="card" aria-labelledby="ord">
+    <h2 id="ord">Order</h2>
+    <label>Medication
+      <select id="drug" data-testid="drug"></select>
+    </label>
+    <label>Dose per administration (mg)
+      <input id="dose" data-testid="dose" type="number" min="0" step="0.5">
+    </label>
+    <label>Frequency (times per day)
+      <input id="freq" data-testid="freq" type="number" min="1" value="1">
+    </label>
+    <p id="calc" data-testid="calc" class="muted"></p>
+
+    <div id="alert" data-testid="alert" role="alert" hidden></div>
+
+    <div id="justify" hidden>
+      <label>Clinical justification to override
+        <textarea id="reason" data-testid="reason" rows="2"></textarea>
+      </label>
+    </div>
+
+    <button id="submit" data-testid="submit">Sign order</button>
+    <p id="result" data-testid="result" role="status"></p>
+  </section>
+
+  <section class="card" aria-labelledby="log">
+    <h2 id="log">Alert log</h2>
+    <ul id="audit" data-testid="audit"></ul>
+  </section>
+</main>
+<footer class="muted">Build <span id="build"></span></footer>
+<script src="app.js"></script>
+</body>
+</html>

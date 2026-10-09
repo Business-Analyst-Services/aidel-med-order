@@ -1,0 +1,13 @@
+{
+  "name": "aidel-med-order",
+  "private": true,
+  "description": "AIDEL demo app: Medication Order screen with maximum-dose alerts (Jira epic AIDEL-57)",
+  "scripts": {
+    "test": "playwright test",
+    "report:jira": "node scripts/report-to-jira.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "http-server": "14.1.1"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "patients": [
+    { "mrn": "DEMO-001", "name": "Test Patient, Child", "weightKg": 15, "weightRecorded": "2026-10-08" },
+    { "mrn": "DEMO-002", "name": "Test Patient, Adult", "weightKg": 70, "weightRecorded": "2026-10-01" },
+    { "mrn": "DEMO-003", "name": "Test Patient, No Weight", "weightKg": null, "weightRecorded": null }
+  ]
+}

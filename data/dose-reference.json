@@ -1,0 +1,8 @@
+{
+  "_owner": "Pharmacy (placeholder table - DEMO ONLY, not clinical values; Pharmacy supplies the real table)",
+  "drugs": [
+    { "id": "DRUG-A", "name": "Demo Drug A (oral)", "maxMgPerKgPerDay": 10, "absoluteMaxMgPerDay": 400 },
+    { "id": "DRUG-B", "name": "Demo Drug B (IV)", "maxMgPerKgPerDay": 5, "absoluteMaxMgPerDay": 250 },
+    { "id": "DRUG-C", "name": "Demo Drug C (oral)", "maxMgPerKgPerDay": 20, "absoluteMaxMgPerDay": 1000 }
+  ]
+}
