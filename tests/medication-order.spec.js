@@ -35,6 +35,14 @@ test('[AIDEL-60][REQ-003] shows an alert when the daily dose exceeds the maximum
   await shot(page, 'AIDEL-60_alert-shown');
 });
 
+test('[AIDEL-60][REQ-003] hard stop when the daily dose is more than twice the maximum', async ({ page }) => {
+  await page.getByTestId('dose').fill('400');
+  await expect(page.getByTestId('alert')).toContainText('HARD STOP');
+  await expect(page.getByTestId('reason')).toBeHidden();
+  await expect(page.getByTestId('submit')).toBeDisabled();
+  await shot(page, 'AIDEL-60_hard-stop');
+});
+
 test('[AIDEL-60][REQ-003] no alert when within the limit', async ({ page }) => {
   await page.getByTestId('dose').fill('50');
   await expect(page.getByTestId('alert')).toBeHidden();
