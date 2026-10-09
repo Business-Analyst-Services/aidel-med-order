@@ -69,6 +69,20 @@ async function jira(method, url, body, headers = {}) {
     await jira('PUT', `/rest/api/3/issue/${key}`, JSON.stringify({
       update: { labels: [{ remove: passed ? 'tests-failed' : 'tests-passed' }, { add: passed ? 'tests-passed' : 'tests-failed' }] },
     }), { 'Content-Type': 'application/json' });
+    // Move the story through the build gate (AIDEL Story Workflow):
+    //  passed + In Progress  -> "Submit Build"  -> Build Review (BA then clicks Approve Build)
+    //  failed + Build Review -> "Rework Build"  -> In Progress
+    const issue = await (await jira('GET', `/rest/api/3/issue/${key}?fields=status`)).json();
+    const status = issue.fields?.status?.name;
+    const want = passed && status === 'In Progress' ? 'Submit Build' : !passed && status === 'Build Review' ? 'Rework Build' : null;
+    if (want) {
+      const { transitions = [] } = await (await jira('GET', `/rest/api/3/issue/${key}/transitions`)).json();
+      const t = transitions.find((x) => x.name === want);
+      if (t) {
+        await jira('POST', `/rest/api/3/issue/${key}/transitions`, JSON.stringify({ transition: { id: t.id } }), { 'Content-Type': 'application/json' });
+        console.log(`${key}: ${want}`);
+      }
+    }
     console.log(`${key}: ${passed ? 'passed' : 'FAILED'} (${tests.length} tests)`);
   }
 })();

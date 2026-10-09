@@ -35,7 +35,11 @@ jobs:
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GIT_SHA: ${{ github.sha }}
-        run: node scripts/report-to-jira.js
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          SLUG=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
+          export PREVIEW_URL="https://aidel-med-order-git-${SLUG}-business-analyst-services.vercel.app"
+          node scripts/report-to-jira.js
       - name: Fail the job if tests failed
         if: steps.tests.outcome == 'failure'
         run: exit 1
