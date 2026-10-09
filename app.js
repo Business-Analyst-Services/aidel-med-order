@@ -43,8 +43,13 @@ function evaluate() {
 
   const alert = $('alert');
   const exceeded = max != null && daily > max;
-  // REQ-003
-  if (exceeded) {
+  // REQ-003 (changed): over 2x the maximum is a hard stop that a justification cannot override
+  const hardStop = max != null && daily > 2 * max;
+  if (hardStop) {
+    alert.hidden = false;
+    alert.className = 'stop';
+    alert.textContent = `HARD STOP: ${daily} mg/day is more than twice the ${max} mg/day limit for ${p.weightKg} kg. Reduce the dose or contact Pharmacy.`;
+  } else if (exceeded) {
     alert.hidden = false;
     alert.className = 'warn';
     alert.textContent = `Maximum-dose alert: ${daily} mg/day exceeds the ${max} mg/day limit for ${p.weightKg} kg.`;
@@ -52,10 +57,10 @@ function evaluate() {
     alert.hidden = true;
   }
   // REQ-004
-  $('justify').hidden = !exceeded;
+  $('justify').hidden = !exceeded || hardStop;
   const needsReason = exceeded && !$('reason').value.trim();
-  $('submit').disabled = p.weightKg == null || dose <= 0 || needsReason;
-  return { p, d, daily, max, exceeded };
+  $('submit').disabled = p.weightKg == null || dose <= 0 || needsReason || hardStop;
+  return { p, d, daily, max, exceeded, hardStop };
 }
 
 function submit() {
