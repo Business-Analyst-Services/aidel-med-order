@@ -53,13 +53,21 @@ async function jira(method, url, body, headers = {}) {
           ...(RUN_URL ? [link('Test run', RUN_URL), text(' · ')] : []),
           ...(PREVIEW_URL ? [link('Preview', PREVIEW_URL)] : []),
         ),
-        para(text('Screenshots attached to this story.')),
+        para(text('Screenshots attached to this story. What each screenshot shows (read from the screen, not inferred):')),
+        {
+          type: 'bulletList',
+          content: fs.readdirSync('screenshots').filter((f) => f.startsWith(key + '_') && f.endsWith('.txt')).map((f) => ({
+            type: 'listItem',
+            content: [para(text(f.replace('.txt', '.png') + ': ', [{ type: 'strong' }]), text(fs.readFileSync(path.join('screenshots', f), 'utf8')))],
+          })),
+        },
       ],
     };
+    if (!doc.content.at(-1).content.length) doc.content.pop();
     await jira('POST', `/rest/api/3/issue/${key}/comment`, JSON.stringify({ body: doc }), { 'Content-Type': 'application/json' });
 
     // Screenshots
-    for (const f of fs.readdirSync('screenshots').filter((f) => f.startsWith(key + '_'))) {
+    for (const f of fs.readdirSync('screenshots').filter((f) => f.startsWith(key + '_') && f.endsWith('.png'))) {
       const fd = new FormData();
       fd.append('file', new Blob([fs.readFileSync(path.join('screenshots', f))], { type: 'image/png' }), f);
       await jira('POST', `/rest/api/3/issue/${key}/attachments`, fd, { 'X-Atlassian-Token': 'no-check' });

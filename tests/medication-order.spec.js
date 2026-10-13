@@ -1,7 +1,30 @@
 // Each test title carries its Jira story and requirement IDs so results can be posted back.
 const { test, expect } = require('@playwright/test');
 
-const shot = (page, name) => page.screenshot({ path: `screenshots/${name}.png`, fullPage: true });
+const fs = require('fs');
+
+// Take a screenshot AND record what is factually on screen, read from the page itself,
+// so the DOC-Agent can describe screens from facts instead of guessing from file names.
+const shot = async (page, name) => {
+  await page.screenshot({ path: `screenshots/${name}.png`, fullPage: true });
+  const facts = await page.evaluate(() => {
+    const $ = (id) => document.getElementById(id);
+    const vis = (el) => el && !el.hidden && el.offsetParent !== null;
+    const alert = $('alert');
+    const out = [];
+    out.push(`Screen: Medication Order. Patient: ${$('patient').selectedOptions[0]?.text}. ${$('weight').textContent.trim()}`);
+    if ($('dose').value) out.push(`Dose entered: ${$('dose').value} mg × ${$('freq').value}/day. ${$('calc').textContent.trim()}`);
+    if (vis(alert)) out.push(`${alert.className === 'stop' ? 'Red hard-stop banner' : 'Amber warning banner'} shown above the button: "${alert.textContent.trim()}"`);
+    else out.push('No dose alert banner shown.');
+    out.push(vis($('justify')) ? 'Free-text field "Clinical justification to override" is shown.' : 'No justification field shown.');
+    out.push(`Button "${$('submit').textContent.trim()}" is ${$('submit').disabled ? 'disabled' : 'enabled'}.`);
+    if ($('result').textContent.trim()) out.push(`Message after signing: "${$('result').textContent.trim()}"`);
+    const log = [...document.querySelectorAll('#audit li')].length;
+    if (log) out.push(`Alert log shows ${log} entr${log === 1 ? 'y' : 'ies'}.`);
+    return out.join(' ');
+  });
+  fs.writeFileSync(`screenshots/${name}.txt`, facts);
+};
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
